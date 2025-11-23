@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools", "setuptools_scm", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llm-discord"
+authors = [
+  {name = "Blake Randall", email = "1623620+BlakeRandall@users.noreply.github.com"},
+]
+requires-python = ">=3.12"
+license-files = ["LICENSE"]
+dynamic = [
+    "version",
+    "readme",
+    "dependencies",
+    "optional-dependencies"
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+[tool.setuptools.dynamic.readme]
+    file = ["README.rst"]
+
+[tool.setuptools.dynamic.dependencies]
+    file = ["requirements/run.txt"]
+
+[tool.setuptools.dynamic.optional-dependencies.build]
+    file = ["requirements/build.txt"]
+
+[tool.setuptools.dynamic.optional-dependencies.test]
+    file = ["requirements/test.txt"]
+
+[tool.setuptools.dynamic.optional-dependencies.run]
+    file = ["requirements/run.txt"]
+
+[tool.setuptools_scm]
+version_file = "VERSION.txt"
+fallback_version = "0.0.0"
+version_scheme = "guess-next-dev"
+local_scheme = "dirty-tag"

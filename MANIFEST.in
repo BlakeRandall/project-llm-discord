@@ -1,0 +1,9 @@
+global-exclude .vscode
+global-exclude .github
+global-exclude .vscode/**
+global-exclude .github/**
+global-exclude .gitignore
+global-exclude .dockerignore
+global-exclude Dockerfile
+global-exclude .env.example
+global-exclude mcp.yml

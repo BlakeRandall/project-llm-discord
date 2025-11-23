@@ -1,0 +1,118 @@
+name: Default Workflow
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "*"
+    tags:
+      - "*"
+  pull_request:
+    branches:
+      - "*"
+jobs:
+  default:
+    name: default
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Python Setup
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Python Packages
+        run: |
+          python3 -m pip install --requirement ${{ github.workspace }}/requirements/build.txt
+
+      - name: Python Build
+        run: |
+          python3 -m build -s -w
+
+      - name: Python Build (Upload Artifacts)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.ref_name }}-${{ github.sha }}
+          path: |
+            ${{ github.workspace }}/dist
+          retention-days: 7
+
+      - name: Pylint
+        run: |
+          pylint -r y -s y -v --exit-zero llm_discord
+        continue-on-error: true
+
+      - name: Ruff
+        run: |
+          ruff check
+          ruff format --checkl
+        continue-on-error: true
+
+      - name: Pytest
+        run: |
+          pytest --cov-branch --cov=llm_discord
+        continue-on-error: true
+
+      - name: Container Image Setup Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Container Image Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository }}
+          flavor: |
+            latest=auto
+          tags: |
+            type=schedule,pattern=nightly
+            type=ref,event=branch
+            type=ref,event=tag
+            type=ref,event=pr
+
+      - name: Container Image Cache
+        uses: actions/cache@v4
+        id: cache
+        with:
+          path: cache-mount
+          key: cache-mount-${{ hashFiles('Dockerfile') }}
+
+      - name: Container Image Cache Mounts (restore)
+        uses: reproducible-containers/buildkit-cache-dance@v3
+        with:
+          builder: ${{ steps.setup-buildx.outputs.name }}
+          cache-dir: cache-mount
+          dockerfile: Dockerfile
+          skip-extraction: ${{ steps.cache.outputs.cache-hit }}
+
+      - name: Container Registry Login
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Container Build/Image Publish
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          file: Dockerfile
+          push: ${{ github.ref_type == 'tag' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          annotations: ${{ steps.meta.outputs.annotations }}
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        with:
+          generate_release_notes: true
+          draft: false
+          prerelease: true
+          fail_on_unmatched_files: true
+          files: |
+            ${{ github.workspace }}/dist/*

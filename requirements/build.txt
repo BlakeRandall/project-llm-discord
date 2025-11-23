@@ -1,0 +1,3 @@
+setuptools[core]
+setuptools_scm
+build
