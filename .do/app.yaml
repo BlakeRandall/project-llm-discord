@@ -9,7 +9,7 @@ envs:
   value: ${DISCORD_BOT_TOKEN}
 - key: CHAT_MODEL_API_KEY
   scope: RUN_AND_BUILD_TIME
-  type: GENERAL
+  type: SECRET
   value: ${CHAT_MODEL_API_KEY}
 ingress:
   rules:
