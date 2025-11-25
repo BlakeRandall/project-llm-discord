@@ -1,7 +1,9 @@
 global-exclude .vscode
-global-exclude .github
 global-exclude .vscode/**
+global-exclude .github
 global-exclude .github/**
+global-exclude .do
+global-exclude .do/**
 global-exclude .gitignore
 global-exclude .dockerignore
 global-exclude Dockerfile

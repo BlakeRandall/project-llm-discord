@@ -1,0 +1,44 @@
+name: llm-discord
+region: tor
+features:
+- buildpack-stack=ubuntu-22
+envs:
+- key: DISCORD_BOT_TOKEN
+  scope: RUN_AND_BUILD_TIME
+  type: SECRET
+  value: ${DISCORD_BOT_TOKEN}
+- key: CHAT_MODEL_API_KEY
+  scope: RUN_AND_BUILD_TIME
+  type: GENERAL
+  value: ${CHAT_MODEL_API_KEY}
+ingress:
+  rules:
+  - component:
+      name: svc-llm-discord
+    match:
+      authority:
+        exact: ""
+      path:
+        prefix: /
+services:
+- name: svc-llm-discord
+  image:
+    registry: blakerandall
+    registry_type: GHCR
+    repository: project-llm-discord
+    digest: ${IMAGE_DIGEST}
+  instance_count: 1
+  instance_size_slug: apps-s-1vcpu-0.5gb
+  http_port: 8080
+  liveness_health_check:
+    failure_threshold: 9
+    http_path: /api/health
+    period_seconds: 10
+    success_threshold: 1
+    timeout_seconds: 1
+  health_check:
+    failure_threshold: 9
+    http_path: /api/ready
+    period_seconds: 10
+    success_threshold: 1
+    timeout_seconds: 1

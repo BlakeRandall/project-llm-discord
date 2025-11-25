@@ -95,6 +95,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Container Build/Image Publish
+        id: container_image_push
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -116,3 +117,15 @@ jobs:
           fail_on_unmatched_files: true
           files: |
             ${{ github.workspace }}/dist/*
+
+      - name: Deploy the app
+        uses: digitalocean/app_action/deploy@v2
+        if: github.ref_type == 'tag'
+        env:
+          IMAGE_DIGEST: "${{ steps.container_image_push.outputs.digest }}"
+          DISCORD_BOT_TOKEN: "${{ secrets.DISCORD_BOT_TOKEN }}"
+          CHAT_MODEL_API_KEY: "${{ secrets.CHAT_MODEL_API_KEY }}"
+        with:
+          token: "${{ secrets.DO_TOKEN }}"
+          print_build_logs: true
+          print_deploy_logs: true

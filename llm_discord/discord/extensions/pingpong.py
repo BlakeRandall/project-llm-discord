@@ -18,16 +18,10 @@ async def teardown(bot: commands.Bot):
 
 
 class PingPongCog(BaseCog):
-    @commands.command()
-    async def clean(self, ctx: commands.Context[commands.Bot]):
-        async for history in ctx.channel.history():
-            if history.author == self.bot.user:
-                await history.delete(delay=1)
-
     @commands.hybrid_command()
     async def ping(self, ctx: commands.Context[commands.Bot]):
         """Pong"""
         now = datetime.now().astimezone(timezone.utc)
         async with ctx.typing(ephemeral=True):
             await sleep_until(now + timedelta(seconds=1))
-            await ctx.send(content="pong", ephemeral=True, delete_after=3)
+            await ctx.send(content="pong", ephemeral=True, delete_after=300)

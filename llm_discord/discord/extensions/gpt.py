@@ -1,8 +1,8 @@
 import logging
 from discord import Message
-from discord.enums import ChannelType
 from discord.ext import commands, tasks
 from langchain.messages import HumanMessage
+from llm_discord.discord.checks import _ownership_check
 from llm_discord.discord.cogs import BaseCog
 from llm_discord.agent import AgentFacade
 
@@ -25,8 +25,13 @@ class GPTCog(BaseCog):
         logger.info(f"Message {message}")
         if message.author == self.bot.user:
             return
-        if message.channel.type not in [ChannelType.text]:
+
+        app_info = self.bot.application
+        if not app_info:
+            app_info = await self.bot.application_info()
+        if not _ownership_check(message.author, app_info):
             return
+
         async with message.channel.typing():
             agent = await AgentFacade.agent()
             response = await agent.ainvoke(
