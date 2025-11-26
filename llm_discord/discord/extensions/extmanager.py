@@ -38,6 +38,4 @@ class ExtManagerCog(BaseCog):
                 await ctx.bot.reload_extension(f".{name}", package=pkg.__name__)
             for command in await ctx.bot.tree.sync():
                 logger.info(f"AppCommand Sync: {command}")
-            await ctx.send(
-                content="Extensions Reloaded", ephemeral=True, delete_after=300
-            )
+            await ctx.send(content="Extensions Reloaded", ephemeral=True)

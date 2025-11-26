@@ -24,4 +24,4 @@ class PingPongCog(BaseCog):
         now = datetime.now().astimezone(timezone.utc)
         async with ctx.typing(ephemeral=True):
             await sleep_until(now + timedelta(seconds=1))
-            await ctx.send(content="pong", ephemeral=True, delete_after=300)
+            await ctx.send(content="pong", ephemeral=True)
